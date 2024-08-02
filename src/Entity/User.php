@@ -3,6 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Provider\UserProvider;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -10,7 +15,54 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/users',
+            description: 'Get all users',
+            normalizationContext: ['groups' => ['product:read']]
+        ),
+        new Get(
+            uriTemplate: '/user/{id}/{enterpriseName}',
+            requirements: ['id' => '\d+', 'enterpriseName' => '\w+'],
+            description: 'Get a user by ID and enterprise name',
+            normalizationContext: ['groups' => ['product:read']],
+            provider: UserProvider::class
+        ),
+        new Post(
+            uriTemplate: '/users',
+            inputFormats: ['json' => ['application/json']],
+            outputFormats: ['json' => ['application/json']],
+            openapiContext: [
+                'tags' => ['User'],
+                'order' => 1,
+                'requestBody' => [
+                    'content' => [
+                        'application/json' => [
+                            'example' => [
+                                'email' => 'user@example.com',
+                                'password' => 'password123',
+                                'firstname' => 'John',
+                                'lastname' => 'Doe',
+                                'date_of_birth' => '2000-01-01',
+                                'status' => 'active',
+                                'enterprise' => '/enterprises/1'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            description: 'Create a new user',
+            normalizationContext: ['groups' => ['user:read']],
+            denormalizationContext: ['groups' => ['user:write']]
+        ),
+        new Delete(
+            uriTemplate: '/user/{id}',
+            requirements: ['id' => '\d+'],
+            description: 'Delete a user by ID'
+        )
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]

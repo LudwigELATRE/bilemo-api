@@ -3,12 +3,30 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use App\Provider\ProductProvider;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/products',
+            description: 'Get all products',
+            normalizationContext: ['groups' => ['product:read']]
+        ),
+        new Get(
+            uriTemplate: '/product/{id}/{enterpriseName}',
+            requirements: ['id' => '\d+', 'enterpriseName' => '\w+'],
+            description: 'Get a product by ID and enterprise name',
+            normalizationContext: ['groups' => ['product:read']],
+            provider: ProductProvider::class
+        )
+    ]
+)]
 class Product
 {
     #[ORM\Id]

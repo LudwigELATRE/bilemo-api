@@ -16,6 +16,18 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    public function findOneByIdAndEnterpriseName(int $id, string $enterpriseName): ?Product
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.enterprise', 'e')
+            ->where('p.id = :id')
+            ->andWhere('e.name = :enterpriseName')
+            ->setParameter('id', $id)
+            ->setParameter('enterpriseName', $enterpriseName)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 //    /**
 //     * @return Product[] Returns an array of Product objects
 //     */
