@@ -16,6 +16,18 @@ class EnterpriseRepository extends ServiceEntityRepository
         parent::__construct($registry, Enterprise::class);
     }
 
+
+    public function findAllByUuidEnterprise(string $enterpriseUuid): array
+    {
+        $products = $this->createQueryBuilder('p')
+            ->join('p.enterprise', 'e')
+            ->where('e.uuid = :enterpriseUuid')
+            ->setParameter('enterpriseUuid', $enterpriseUuid)
+            ->getQuery()
+            ->getResult();
+        dd($products);
+    }
+
     //    /**
     //     * @return Enterprise[] Returns an array of Enterprise objects
     //     */
