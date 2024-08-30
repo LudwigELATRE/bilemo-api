@@ -20,5 +20,27 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Provider\Product\ProductProvider:
+        arguments:
+            $productRepository: '@App\Repository\ProductRepository'
+            $requestStack: '@request_stack'
+
+    App\Provider\Product\ProductCollectionProvider:
+        arguments:
+            $productRepository: '@App\Repository\ProductRepository'
+            $requestStack: '@request_stack'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\EventListener\EnterpriseListener:
+        # This configuration registers the EnterpriseListener as a Doctrine event listener.
+        # The listener will execute specific methods before the entity is persisted (prePersist) or updated (preUpdate) in the database.
+        # prePersist: This event is triggered before a new entity is persisted (saved) in the database.
+        # preUpdate: This event is triggered before an existing entity is updated in the database.
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
+            - { name: doctrine.event_listener, event: preUpdate }
+
+    App\EventListener\UserListener:
+        tags:
+            - { name: 'kernel.event_listener', event: 'kernel.view', method: 'onUserPost', priority: 100 }
